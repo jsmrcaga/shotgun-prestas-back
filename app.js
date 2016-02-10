@@ -259,6 +259,48 @@ app.get("/presta/:id/shotguns", function (req, res, err){
 	});
 });
 
+app.put("/presta/:id", function(req, res, err){
+	var check = config.checkParams(['key', 'name', 'description', 'type', 'slots'], req.body);
+	if(!check.success){
+		res.status(400);
+		res.json({
+			error:{
+				message: "Missing field " + check.field,
+			}
+		});
+		return;
+	}
+
+	var params = {
+		presta_id: req.params.id,
+		key: req.body.key,
+		name: req.body.name,
+		description: req.body.description,
+		type: req.body.type,
+		slots: req.body.slots,
+	};
+
+	db.adminKeys.check(params.key, function(merr, check) {
+		if (merr){
+			config.sendError(res, "mysql-002", err.code, 400);
+			return;
+		}
+		if (!check){
+			config.sendError(res, "Unauthorized", err.code, 403);
+			return;
+		}
+
+		db.prestas.updatePresta(params, function(merr, rows) {
+			if (merr){
+				config.sendError(res, "mysql-002", err.code, 400);
+				return;
+			}
+
+			res.sendStatus(200);
+		})
+	})
+});
+
 app.post("/presta/:id/shotgun", function (req, res, err){
 	var check = config.checkParams(["mail", "name"], req.body);
 	if(!check.success){

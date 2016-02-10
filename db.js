@@ -89,8 +89,18 @@ var db = {
 			);
 		},
 
-		updatePresta: function(callback){
+		updatePresta: function(params, callback){
+			db.connection.query("UPDATE `Prestas` SET type=?, name=?, description=?, edit_key=?, slots=? WHERE id=?",
+				[params.type, params.name, params.description, params.edit_key, params.slots, params.presta_id],
+				function(err, rows, fields) {
+					if (err){
+						logErr(err);
+						callback(err);
+					}
 
+					callback();
+				}
+			);
 		}
 	},
 
@@ -133,6 +143,21 @@ var db = {
 		}
 
 		callback(null, rows);
+	},
+
+	adminKeys: {
+
+		check: function(key, callback) {
+			db.connection.query('SELECT COUNT(*) AS c FROM `AdminKey` WHERE `appkey` = ' + db.connection.escape(key), function(err, rows, fields) {
+				if (err){
+					logErr(err);
+					callback(err);
+				}
+
+				callback(null, !!rows[0].c);
+			});
+		}
+
 	}
 };
 
