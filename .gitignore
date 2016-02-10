@@ -1,2 +1,9 @@
 ./config.js
 config.js
+
+./.gitignore
+.gitignore
+
+.DS_Store
+
+node_modules

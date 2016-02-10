@@ -6,8 +6,8 @@ CREATE TABLE Events (
 	id INT AUTO_INCREMENT UNIQUE,
 	name VARCHAR(255) NOT NULL,
 	description TEXT,
-	start DATETIME,
-	end DATETIME,
+	start TEXT,
+	end TEXT,
 	edit_key VARCHAR(32),
 
 PRIMARY KEY (id)
@@ -29,6 +29,7 @@ PRIMARY KEY (id)
 CREATE TABLE Shotguns (
 	id INT AUTO_INCREMENT UNIQUE,
 	presta_id INT NOT NULL,
+	name VARCHAR(75) NOT NULL,
 	mail VARCHAR(100) NOT NULL,
 	status VARCHAR(1) NOT NULL,
 	validate_key VARCHAR(32) NOT NULL,
