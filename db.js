@@ -22,23 +22,13 @@ var db = {
 	events:{
 		getAll: function(callback){
 			db.connection.query("SELECT * FROM `Events` ORDER BY id", function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
 		getById: function(id, callback){
 			db.connection.query("SELECT * FROM `Events` WHERE `id`="+db.connection.escape(id), function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
@@ -69,34 +59,19 @@ var db = {
 	prestas:{
 		getAll:function(callback){
 			db.connection.query("SELECT Prestas.*, COUNT(Shotguns.id) AS active_shotguns FROM `Prestas` LEFT OUTER JOIN Shotguns ON (Shotguns.presta_id = Prestas.id) GROUP BY Prestas.id", function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
 		getById: function(id, callback){
 			db.connection.query("SELECT Prestas.*, COUNT(Shotguns.id) AS active_shotguns FROM `Prestas` LEFT OUTER JOIN Shotguns ON (Shotguns.presta_id = Prestas.id) WHERE Prestas.id="+db.connection.escape(id)+" GROUP BY Prestas.id", function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
 		getFromEvent: function(ev_id, callback){
 			db.connection.query("SELECT Prestas.*, COUNT(Shotguns.id) AS active_shotguns FROM `Prestas` LEFT OUTER JOIN Shotguns ON (Shotguns.presta_id = Prestas.id) WHERE `event_id`="+db.connection.escape(ev_id)+" GROUP BY Prestas.id", function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
@@ -122,23 +97,13 @@ var db = {
 	shotguns:{
 		getById: function(id, callback){
 			db.connection.query("SELECT * FROM `Shotguns` WHERE `id`="+db.connection.escape(id), function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
 		getFromPresta: function(pr_id, callback){
 			db.connection.query("SELECT * FROM `Shotguns` WHERE `presta_id`="+db.connection.escape(pr_id), function (err, rows, fields){
-				if (err){
-					logErr(err);
-					callback(err);
-				}
-
-				callback(null, rows);
+				db.sendResponse(err, rows, callback);
 			});
 		},
 
@@ -146,12 +111,7 @@ var db = {
 			db.connection.query("INSERT INTO `Shotguns`(id, name, presta_id, mail, status, validate_key) VALUES (null, ?, ?, ?, ?, ?)",
 				[params.name, params.presta_id, params.mail, 'E', params.validate_key],
 				function (err, rows, fields){
-					if (err){
-						logErr(err);
-						callback(err);
-					}
-
-					callback(null, rows);
+					db.sendResponse(err, rows, callback);
 				}
 			);
 		},
@@ -160,15 +120,19 @@ var db = {
 			db.connection.query("DELETE FROM `Shotguns` WHERE `id`=?",
 				[id],
 				function (err, rows, fields){
-					if (err){
-						logErr(err);
-						callback(err);
-					}
-
-					callback(null, rows);
+					
 				}
 			);
 		}
+	},
+
+	sendResponse: function(err, rows, callback){
+		if (err){
+			logErr(err);
+			callback(err);
+		}
+
+		callback(null, rows);
 	}
 };
 
