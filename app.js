@@ -359,6 +359,18 @@ app.delete("/shotgun/:id", function(req, res, err){
 	});
 });
 
+// validates shotgun
+app.post("/shotgun/:id", function(req, res, err){
+	db.shotguns.validateShotgun(req.params.id, function(merr, rows){
+		if(merr){
+			config.sendError(res, "mysql-001", merr.code, 500);
+			return;
+		}
+
+		res.sendStatus(200);
+	});
+});
+
 // startup
 
 app.listen(8080, function(){

@@ -121,12 +121,19 @@ var db = {
 					db.sendResponse(err, rows, callback);
 				}
 			);
+		},
+
+		validateShotgun: function(id, callback){
+			db.connection.query("UPDATE `Shotguns` SET status='V' WHERE id= ?", [id], function(err, rows, fields){
+				db.sendResponse(err, rows, callback);
+			});
 		}
 	},
 
 	sendResponse: function(err, rows, callback){
 		if (err){
 			callback(err);
+			logErr(err);
 			return;
 		}
 
