@@ -1,5 +1,4 @@
 // dependecies and options
-
 var express = require('express');
 var app = express();
 
@@ -32,7 +31,7 @@ app.get("/events", function(req, res, err){
 	db.events.getAll(function(merr, rows){
 		var resp = [];
 		if(merr){
-			config.sendError(res, "mysql-001", err.code, 500);
+			config.sendError(res, "mysql-001", merr.code, 500);
 			return;
 		}
 
@@ -51,7 +50,7 @@ app.get("/events", function(req, res, err){
 			db.prestas.getFromEvent(rows[ev].id, (function(current_event){
 				return function(merr, prows){
 					if(merr){
-						config.sendError(res, "mysql-001", err.code, 500);
+						config.sendError(res, "mysql-001", merr.code, 500);
 						return;
 					}
 					var prestas_in_ev = [];
@@ -86,7 +85,7 @@ app.get("/events", function(req, res, err){
 app.get("/events/:id", function (req, res, err){
 	db.events.getById(req.params.id, function(merr, rows){
 		if(merr){
-			config.sendError(res, "mysql-001", err.code, 500);
+			config.sendError(res, "mysql-001", merr.code, 500);
 			return;
 		}
 
@@ -144,7 +143,22 @@ app.post("/event", function (req, res, err){
 
 	db.events.setEvent(params, function(merr, rows){
 		if(merr){
-			config.sendError(res, "mysql-002", err.code, 400);
+			config.sendError(res, "mysql-002", merr.code, 400);
+			return;
+		}
+		res.sendStatus(200);
+	});
+});
+
+app.put("/event/:id", function(req, res, err){
+	var params = {
+		updating:req.body,
+		id: req.params.id,
+	};
+
+	db.events.updateEvent(params, function(merr, rows){
+		if(merr){
+			config.sendError(res, "mysql-003", merr.code, 500);
 			return;
 		}
 		res.sendStatus(200);
@@ -156,7 +170,7 @@ app.post("/event", function (req, res, err){
 app.get("/presta/all", function (req, res, err){
 	db.prestas.getAll(function(merr, prows){
 		if(merr){
-			config.sendError(res, "mysql-001", err.code, 500);
+			config.sendError(res, "mysql-001", merr.code, 500);
 			return;
 		}
 
@@ -182,7 +196,7 @@ app.get("/presta/all", function (req, res, err){
 app.get("/presta/:id", function (req, res, err){
 	db.prestas.getById(req.params.id, function(merr, rows){
 		if(merr){
-			config.sendError(res, "mysql-001", err.code, 500);
+			config.sendError(res, "mysql-001", merr.code, 500);
 			return;
 		}
 
@@ -224,7 +238,7 @@ app.post("/presta", function (req, res, err) {
 
 	db.prestas.setPresta(params, function(merr, rows){
 		if(merr){
-			config.sendError(res, "mysql-002", err.code, 400);
+			config.sendError(res, "mysql-002", merr.code, 400);
 			return;
 		}
 
@@ -237,7 +251,7 @@ app.get("/presta/:id/shotguns", function (req, res, err){
 	db.getFromPresta(req.params.id, function(merr, rows){
 		var shotguns = [];
 		if(merr){
-			config.sendError(res, "mysql-001", err.code, 500);
+			config.sendError(res, "mysql-001", merr.code, 500);
 			return;
 		}
 
@@ -272,27 +286,30 @@ app.put("/presta/:id", function(req, res, err){
 	}
 
 	var params = {
-		presta_id: req.params.id,
-		key: req.body.key,
-		name: req.body.name,
-		description: req.body.description,
-		type: req.body.type,
-		slots: req.body.slots,
+		updating:{},
+		id: req.params.id,
+		key: req.body.key
 	};
+
+	var ignoredKeys = ["key"];
+	for(var k in req.body){
+		if(ignoredKeys.indexOf(k) > -1) continue;
+		params.updating[k] = req.body[k];
+	}
 
 	db.adminKeys.check(params.key, function(merr, check) {
 		if (merr){
-			config.sendError(res, "mysql-002", err.code, 400);
+			config.sendError(res, "mysql-002", merr.code, 400);
 			return;
 		}
 		if (!check){
-			config.sendError(res, "Unauthorized", err.code, 403);
+			config.sendError(res, "Unauthorized", merr.code, 403);
 			return;
 		}
 
 		db.prestas.updatePresta(params, function(merr, rows) {
 			if (merr){
-				config.sendError(res, "mysql-002", err.code, 400);
+				config.sendError(res, "mysql-002", merr.code, 400);
 				return;
 			}
 
@@ -323,7 +340,7 @@ app.post("/presta/:id/shotgun", function (req, res, err){
 
 	db.shotguns.setShotgun(params, function(merr, rows){
 		if(merr){
-			config.sendError(res, "mysql-002", err.code, 400);
+			config.sendError(res, "mysql-002", merr.code, 400);
 			return;
 		}
 
@@ -331,6 +348,16 @@ app.post("/presta/:id/shotgun", function (req, res, err){
 	});
 });
 
+app.delete("/shotgun/:id", function(req, res, err){
+	db.shotguns.deleteShotgun(req.params.id, function(merr, rows){
+		if(merr){
+			config.sendError(res, "mysql-004", merr.code, 500);
+			return;
+		}
+
+		res.sendStatus(200);
+	});
+});
 
 // startup
 

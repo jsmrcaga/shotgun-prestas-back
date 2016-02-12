@@ -12,6 +12,7 @@ var db = {
 			password: appConfig.db.password,
 			database: appConfig.db.db
 		});
+		db.connection.on('error', function(err){logErr(err)});
 		db.connection.connect();
 	},
 
@@ -41,18 +42,15 @@ var db = {
 			db.connection.query("INSERT INTO `Events`(id, name, description, start, end, edit_key) VALUES (null, ?, ?, ?, ?, ?)",
 				[params.name, params.description, params.start, params.end, params.edit_key],
 				function (err, rows, fields){
-					if (err){
-						logErr(err);
-						callback(err);
-					}
-
-					callback(null, rows);
+					db.sendResponse(err, rows, callback);
 				}
 			);
 		},
 
-		updateEvent: function(callback){
-
+		updateEvent: function(params, callback){
+			db.connection.query("UPDATE Events SET ? WHERE id=?", [params.updating, params.id], function(err, rows, fields){
+				db.sendResponse(err, rows, callback);
+			});
 		}
 	},
 
@@ -79,26 +77,16 @@ var db = {
 			db.connection.query("INSERT INTO `Prestas`(id, event_id, type, name, description, edit_key, slots) VALUES (null, ?, ?, ?, ?, ?, ?)",
 				[params.event_id, params.type, params.name, params.description, params.edit_key, params.slots],
 				function (err, rows, fields){
-					if (err){
-						logErr(err);
-						callback(err);
-					}
-
-					callback(null, rows);
+					db.sendResponse(err, rows, callback);
 				}
 			);
 		},
 
 		updatePresta: function(params, callback){
-			db.connection.query("UPDATE `Prestas` SET type=?, name=?, description=?, edit_key=?, slots=? WHERE id=?",
-				[params.type, params.name, params.description, params.edit_key, params.slots, params.presta_id],
+			db.connection.query("UPDATE `Prestas` SET ? WHERE id=?",
+				[params.updating, params.presta_id],
 				function(err, rows, fields) {
-					if (err){
-						logErr(err);
-						callback(err);
-					}
-
-					callback();
+					db.sendResponse(err, rows, callback);
 				}
 			);
 		}
@@ -126,11 +114,11 @@ var db = {
 			);
 		},
 
-		removeShotgun: function(id, callback){
+		deleteShotgun: function(id, callback){
 			db.connection.query("DELETE FROM `Shotguns` WHERE `id`=?",
 				[id],
 				function (err, rows, fields){
-					
+					db.sendResponse(err, rows, callback);
 				}
 			);
 		}
@@ -138,8 +126,8 @@ var db = {
 
 	sendResponse: function(err, rows, callback){
 		if (err){
-			logErr(err);
 			callback(err);
+			return;
 		}
 
 		callback(null, rows);
@@ -150,7 +138,6 @@ var db = {
 		check: function(key, callback) {
 			db.connection.query('SELECT COUNT(*) AS c FROM `AdminKey` WHERE `appkey` = ' + db.connection.escape(key), function(err, rows, fields) {
 				if (err){
-					logErr(err);
 					callback(err);
 				}
 
@@ -167,3 +154,4 @@ function logErr(err) {
 	console.error(chalk.red("Error in db:"));
 	console.log(err);
 }
+
